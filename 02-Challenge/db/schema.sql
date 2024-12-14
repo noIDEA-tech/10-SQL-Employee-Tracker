@@ -1,7 +1,7 @@
 DROP DATABASE IF EXISTS employee_db;
 CREATE DATABASE employee_db;
 
---was getting error when using \c--
+
 \cd employee_db;
 
 CREATE TABLE department (
