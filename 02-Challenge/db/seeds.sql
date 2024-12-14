@@ -1,5 +1,5 @@
-INSERT INTO  department (id, employee_name)
-VALUES (1, 'employee_name')
+INSERT INTO  department (id, department_name)
+VALUES (1, 'department_name')
 
 INSERT INTO role_id (id, title, salary, department)
 

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Employee Tracker CLI application for Employee Database Management",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
