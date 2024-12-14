@@ -1,8 +1,10 @@
-INSERT INTO  department (id, employee_name)
-VALUES (1, 'employee_name')
+-- INSERT INTO  department (id, employee_name)
+-- VALUES (1, 'employee_name')
 
-INSERT INTO role_id ()
+-- INSERT INTO role_id (id, title, salary, department)
 
+-- INSERT INTO employee (id, first_name, last_name, role_id, manager_id)
+-- VALUES ()
 
 --EXAMPLE CODE FROM GITHUB:
 -- INSERT INTO department(department_name)
