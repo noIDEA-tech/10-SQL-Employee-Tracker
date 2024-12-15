@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import inquirer from 'inquirer';
 dotenv.config();
 //copied from mini-challenge
 import pg from 'pg';
@@ -44,7 +45,7 @@ async function startApp() {
                     'Delete Role',
                     'Delete Employee',
                     'View Department Budget',
-                    'Exit'\
+                    'Exit'
                 ]
             }
         ]);
@@ -142,9 +143,93 @@ async function viewEmployees() {
 }
 
 async function addDepartment() {
-    
+    try {
+        const answer = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'name',
+                message: 'What is the name of the department?',
+                validate: input => input ? true : 'Department name cannot be empty.'
+            }
+   ]);
+ 
+    await pool.query('INSERT INTO department (name) VALUES ($1)', [answer.name]);
+        console.log(`Added ${answer.name} department to the database.`);
+        startApp();
+    } catch (err) {
+        console.error('Error adding department:', err);
+        startApp();
+    }   
+}
+async function addRole() {
+  try {
+        const [depts] = await Promise.all([
+         pool.query('SELECT * FROM department')
+    ]);
+
+    const answer = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'title',
+                message: 'What is the name of the role?',
+                validate: input => input ? true : 'Role name cannot be empty.'
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'What is the salary for this role?',
+                validate: input => !isNaN(input) && input > 0 ? true : 'Please enter a valid salary.'
+            },
+            {
+                type: 'list',
+                name: 'department_id',
+                message: 'Which department does this role belong to?',
+                choices: depts.rows.map(dept => ({ name: dept.name, value: dept.id }))
+            }
+    ]);
+
+    await pool.query('INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)', [answer.title, answer.salary, answer.department_id]);
+        console.log(`Added ${answer.title} role to the database.`);
+             startApp();
+    }   catch (err) {
+        console.error('Error adding role:', err);
+        startApp();
+    }
 }
 
+async function addEmployee() {
+    try {
+        const [roles, employees] = await Promise.all([
+         pool.query('SELECT * FROM role'),
+         pool.query('SELECT * FROM employee')
+    ]);
+
+        const answer = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'firstName',
+                message: "What is the employee's first name?",
+                validate: input => input ? true : 'First name cannot be empty.'
+            },
+            {
+                type: 'input',
+                name: 'lastName',
+                message: "What is the employee's last name?",
+                validate: input => input ? true : 'Last name cannot be empty.'
+            },
+            {
+                type: 'list',
+                name: 'roleId',
+                message: "What is the employee's role?",
+                choices: roles.rows.map(role => ({
+                    name: role.title,
+                    value: role.id
+                }))
+            },
+
+        ]);
+    }
+}
 export { pool, init };
 
 
