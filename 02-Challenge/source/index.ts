@@ -15,13 +15,20 @@ const pool = new Pool({
 const connectToDb = async () => {
   try {
     await pool.connect();
-    console.log('Connected to the database.');
+    console.log('Connected to employee database.');
   } catch (err) {
-    console.error('Error connecting to database:', err);
+    console.error('Error connecting to employee database:', err);
     process.exit(1);
   }
 };
 
 export { pool, connectToDb };
+//COPIED FROM EXPRESS
 
-
+// import pg from 'pg'
+// const { Pool } = pg
+ 
+// const pool = new Pool()
+ 
+// export const query = (text, params) => pool.query(text, params)
+ 

@@ -1,4 +1,4 @@
-INSERT INTO  department (name) 
+INSERT INTO  department (department_name) 
 VALUES ('Sales'), ('Engineering'), ('Finance'), ('Legal');
 
 INSERT INTO role (title, salary, department_id)
@@ -15,7 +15,7 @@ INSERT INTO employee (id, first_name, last_name, role_id, manager_id) VALUES
         (SELECT id FROM employee WHERE first_name = 'John' AND last_name = 'Doe')),
     (3, 'Ashley', 'Rodriguez', (SELECT id FROM role WHERE title = 'Lead Engineer'), 
         NULL),
-    (4, 'Kevin',. 'Tupik', (SELECT id FROM role WHERE title = 'Software Engineer'),
+    (4, 'Kevin', 'Tupik', (SELECT id FROM role WHERE title = 'Software Engineer'),
         (SELECT id FROM employee WHERE first_name = 'Ashley', AND last_name = 'Rodriguez')),
     (5, 'Kunai', 'Singh', (SELECT id FROM role WHERE title = 'Account Manager')
         NULL),
