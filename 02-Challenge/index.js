@@ -1,11 +1,12 @@
-import dotenv from 'dotenv';
-import inquirer from 'inquirer';
-dotenv.config();
-//copied from mini-challenge
-import pg from 'pg';
-const { Pool } = pg;
+const inquirer = require('inquirer');
+import inquirer from 'inquirer'; 
+const { Client } = require('pg'); 
+require('dotenv').config();
+require('console.table');
+const client = require('./config/connection');
+ 
 
-const pool = new Pool({
+const client = new Client({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -14,20 +15,19 @@ const pool = new Pool({
 });
 
 async function init() {
-  try {
-    await pool.connect();
-    console.log('Connected to employee database.');
-    startApp();
-  } catch (err) {
+    try {
+        await client.connect();
+        console.log('Connected to employee database.');
+        startApp();
+} catch (err) {
     console.error('Error connecting to the database:', err);
-  }
+        }
 }
-
+    
 async function startApp() {
     try {
         const answer = await inquirer.prompt([
             {
-
                 type: 'list',
                 name: 'action',
                 message: 'What would you like to do?',
@@ -48,7 +48,7 @@ async function startApp() {
                     'Exit'
                 ]
             }
-        ]);
+    ]);
 
         switch (answer.action) {
             case 'View All Departments':
@@ -91,7 +91,7 @@ async function startApp() {
                 await viewDepartmentBudget();
                 break;
             case 'Exit':
-                await pool.end();
+                await client.end();
                 console.log('Goodbye!');
                 process.exit();                    
         }
@@ -102,7 +102,7 @@ async function startApp() {
 
 async function viewDepartments() {
     try {
-        const result = await pool.query('SELECT * FROM department');
+        const result = await client.query('SELECT * FROM department');
         console.table(result.rows);
         startApp();
     } catch (err) {
@@ -113,7 +113,7 @@ async function viewDepartments() {
 
 async function viewRoles() {
     try {
-        const result = await pool.query(`
+        const result = await client.query(`
             SELECT role.id, role.title, deparment.name AS department, role.salary
             FROM role
             JOIN deparment ON role.department_id = department.id
@@ -126,7 +126,7 @@ async function viewRoles() {
 }
 async function viewEmployees() {
     try {
-        const result = await pool.query(` 
+        const result = await client.query(` 
             SELECT
             employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
             FROM employee  
@@ -153,7 +153,7 @@ async function addDepartment() {
             }
    ]);
  
-    await pool.query('INSERT INTO department (name) VALUES ($1)', [answer.name]);
+    await client.query('INSERT INTO department (name) VALUES ($1)', [answer.name]);
         console.log(`Added ${answer.name} department to the database.`);
         startApp();
     } catch (err) {
@@ -164,7 +164,7 @@ async function addDepartment() {
 async function addRole() {
   try {
         const [depts] = await Promise.all([
-         pool.query('SELECT * FROM department')
+         client.query('SELECT * FROM department')
     ]);
 
     const answer = await inquirer.prompt([
@@ -184,14 +184,19 @@ async function addRole() {
                 type: 'list',
                 name: 'department_id',
                 message: 'Which department does this role belong to?',
-                choices: depts.rows.map(dept => ({ name: dept.name, value: dept.id }))
-            }
+                choices: [
+                    depts.rows.map(dept => ({ name: dept.name, value: dept.id 
+            }))
+        ]
+        }
     ]);
 
-    await pool.query('INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)', [answer.title, answer.salary, answer.department_id]);
+    await client.query('INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)', 
+        [answer.title, answer.salary, answer.department_id]
+        );
         console.log(`Added ${answer.title} role to the database.`);
-             startApp();
-    }   catch (err) {
+        startApp();
+}   catch (err) {
         console.error('Error adding role:', err);
         startApp();
     }
@@ -200,8 +205,8 @@ async function addRole() {
 async function addEmployee() {
     try {
         const [roles, employees] = await Promise.all([
-         pool.query('SELECT * FROM role'),
-         pool.query('SELECT * FROM employee')
+         client.query('SELECT * FROM role'),
+         client.query('SELECT * FROM employee')
     ]);
 
         const answer = await inquirer.prompt([
@@ -217,19 +222,33 @@ async function addEmployee() {
                 message: "What is the employee's last name?",
                 validate: input => input ? true : 'Last name cannot be empty.'
             },
+            
             {
                 type: 'list',
-                name: 'roleId',
-                message: "What is the employee's role?",
-                choices: roles.rows.map(role => ({
-                    name: role.title,
-                    value: role.id
-                }))
-            },
+                name: 'managerId',
+                message: "Who is the employee's manager?",
+                choices: [ 
+                { name: 'None', value: null },
+                ...employees.rows.map(emp => ({
+                    name: `${emp.first_name} ${emp.last_name}`,
+                    value: emp.id
+                })) 
+            ]  
+        }
+    ]);
 
-        ]);
+    await client.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)', 
+        [answer.firstName, answer.lastName, answer.roleId, answer.managerId]
+    );
+    console.log(`Added ${answer.firstName} ${answer.lastName} to the database.`);
+    startApp();
+    } catch (err) {
+        console.error('Error adding employee:', err);
+        startApp();
     }
 }
-export { pool, init };
+
+init();
+// export { client, init };
 
 

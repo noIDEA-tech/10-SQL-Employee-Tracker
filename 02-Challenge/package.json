@@ -12,10 +12,11 @@
   "dependencies": {
     "console.table": "^0.10.0",
     "dotenv": "^16.4.7",
-    "inquirer": "^8.2.6",
+    "inquirer": "^8.2.4",
     "pg": "^8.13.1"
   },
   "devDependencies": {
-    "@types/inquirer": "^9.0.7"
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^22.10.2"
   }
 }
