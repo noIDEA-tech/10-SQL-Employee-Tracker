@@ -7,7 +7,7 @@ Employee Tracker CLI application for Employee Database Management
 This Employee Tracker is a command-line application created to manage a company's employee database. This application provides users with the functionality to view, add, delete, and update employees and managers, employee/manager roles, employee/manager salaries as well as view, add, delete departments and roles via command generated prompts within the terminal. Users are then able to view the data output in a table format within the terminal. 
 
 ## Video Demonstration
-<video controls src="02-Challenge/Assets/Employee_Tracker.mp4" title="Demonstration"></video>
+[Click to View Video Demonstration](https://drive.google.com/file/d/1FGjUMmTp6k0KhiWj2BPYDTkzAtNCsVld/view)
 
 ## User Story
 
