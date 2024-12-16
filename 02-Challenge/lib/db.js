@@ -41,7 +41,7 @@ class Database {
         try {
             const result = await this.client.query(`
                 SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary,
-                CONCAT(manager.first_name, ' ', manager,last_name) AS manager
+                CONCAT(manager.first_name, '', manager,last_name) AS manager
                 FROM employee
                 LEFT JOIN role ON employee.role_id = role.id
                 LEFT JOIN department ON role.department_id = department.id
@@ -66,7 +66,8 @@ class Database {
     async addRole(title, salary, departmentId) {
         try {
             await this.client.query(
-                'INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)', [title, salary, departmentId]
+                'INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)', 
+                [title, salary, departmentId]
             );
             return true;
         } catch (err) {
@@ -77,7 +78,8 @@ class Database {
     async addEmployeeRole(employeeId, roleId) {
         try {
             await this.client.query(
-                'UPDATE employee SET role_id = $1 WHERE id = $2', [roleId, employeeId]
+                'UPDATE employee SET role_id = $1 WHERE id = $2', 
+                [roleId, employeeId]
             );
             return true;
         } catch (err) {
@@ -86,10 +88,11 @@ class Database {
         }
     }
 
-    async eupdateEmployeeRole(employeeId, roleId) {
+    async updateEmployeeRole(employeeId, roleId) {
         try {
             await this.client.query(
-                'UPDATE employee SET role_id = $1 WHERE id = $2', [roleId, employeeId]
+                'UPDATE employee SET role_id = $1 WHERE id = $2', 
+                [roleId, employeeId]
             );
             return true;
         } catch (err) {
@@ -101,7 +104,8 @@ class Database {
     async updateEmployeeManager(employeeId, managerId) {
         try {
             await this.client.query(
-                'UPDATE employee SET manager_id = $1 WHERE id = $2', [managerId, employeeId]
+                'UPDATE employee SET manager_id = $1 WHERE id = $2', 
+                [managerId, employeeId]
             );
             return true;
         } catch (err) {
@@ -116,7 +120,8 @@ class Database {
                 SELECT employee.id, employee.first_name, employee.last_name, role.title, 
                 FROM employee
                 JOIN role ON employee.role_id = role.id
-                WHERE manager_id = $1`, [managerId]);
+                WHERE manager_id = $1
+                `, [managerId]);
             
             return result.rows;
         } catch (err) {
@@ -130,7 +135,8 @@ class Database {
                 SELECT employee.id, employee.first_name, employee.last_name, role.title
                 FROM employee
                 JOIN role ON employee.role_id = role.id
-                WHERE role.department_id = $1`, [departmentId]);
+                WHERE role.department_id = $1
+                `, [departmentId]);
             return result.rows;
         } catch (err) {
             console.error('Error viewing employees by department:', err);
@@ -170,19 +176,20 @@ class Database {
         try {
           const result = await this.client.query(`
             SELECT 
-              d.name AS department,
-              SUM(r.salary) AS total_budget
-            FROM employee e
-            JOIN role r ON e.role_id = r.id
-            JOIN department d ON r.department_id = d.id
-            WHERE d.id = $1
-            GROUP BY d.name
+              department.name AS department,
+              SUM(role.salary) AS total_budget
+            FROM employee 
+            JOIN role ON employee.role_id = role.id
+            JOIN department ON role.department_id = department.id
+            WHERE department.id = $1
+            GROUP BY department.name
           `, [departmentId]);
           return result.rows[0];
         } catch (err) {
           console.error('Error viewing department budget:', err);
         }
       }
+      
       async close() {
         try {
           await this.client.end();

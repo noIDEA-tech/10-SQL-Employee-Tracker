@@ -1,33 +1,65 @@
-INSERT INTO  department (department_name) 
-VALUES ('Sales'), ('Engineering'), ('Finance'), ('Legal');
+INSERT INTO department (name) VALUES
+    ('Sales'),
+    ('Engineering'),
+    ('Finance'),
+    ('Legal');
 
-INSERT INTO role (title, salary, department_id)
-VALUES ('Salesperson', 80000, (SELECT id FROM department WHERE name = 'Sales')),
-       ('Lead Engineer', 150000 (SELECT id FROM department WHERE name = 'Engineering')),
-       ('Software Engineer', 120000 (SELECT id FROM department WHERE name = 'Engineering')),
-       ('Account Manager', 160000 (SELECT id FROM department WHERE name = 'Finance')), 
-       ('Accountant', 125000, (SELECT id FROM department WHERE name = 'Finance')),
-       ('Legal Team Lead', 250000, (SELECT id FROM department WHERE name = 'Legal')),
-       ('Lawyer', 190000, (SELECT id FROM department WHERE name = 'Legal'));
+INSERT INTO role (title, salary, department_id) VALUES
+    ('Sales Lead', 100000, (SELECT id FROM department WHERE name = 'Sales')),
+    ('Salesperson', 80000, (SELECT id FROM department WHERE name = 'Sales')),
+    ('Lead Engineer', 150000, (SELECT id FROM department WHERE name = 'Engineering')),
+    ('Software Engineer', 120000, (SELECT id FROM department WHERE name = 'Engineering')),
+    ('Account Manager', 160000, (SELECT id FROM department WHERE name = 'Finance')),
+    ('Accountant', 125000, (SELECT id FROM department WHERE name = 'Finance')),
+    ('Legal Team Lead', 250000, (SELECT id FROM department WHERE name = 'Legal')),
+    ('Lawyer', 190000, (SELECT id FROM department WHERE name = 'Legal'));
 
-INSERT INTO employee (id, first_name, last_name, role_id, manager_id) VALUES
-    (2, 'Mike', 'Chan', (SELECT id FROM role WHERE title = 'Salesperson'), 
+INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES
+    ('John', 'Doe', (SELECT id FROM role WHERE title = 'Sales Lead'), NULL),
+    ('Ashley', 'Rodriguez', (SELECT id FROM role WHERE title = 'Lead Engineer'), NULL),
+    ('Sarah', 'Lourd', (SELECT id FROM role WHERE title = 'Legal Team Lead'), NULL),
+    ('Kunal', 'Singh', (SELECT id FROM role WHERE title = 'Account Manager'), NULL),
+
+    ('Mike', 'Chan', 
+        (SELECT id FROM role WHERE title = 'Salesperson'),
         (SELECT id FROM employee WHERE first_name = 'John' AND last_name = 'Doe')),
-    (3, 'Ashley', 'Rodriguez', (SELECT id FROM role WHERE title = 'Lead Engineer'), 
-        NULL),
-    (4, 'Kevin', 'Tupik', (SELECT id FROM role WHERE title = 'Software Engineer'),
-        (SELECT id FROM employee WHERE first_name = 'Ashley', AND last_name = 'Rodriguez')),
-    (5, 'Kunai', 'Singh', (SELECT id FROM role WHERE title = 'Account Manager')
-        NULL),
-    (6, 'Malia', 'Brown', (SELECT id FROM role WHERE title = 'Accountant'), 
-        (SELECT id from employee WHERE first_name = 'Kunai', AND last_name = 'Singh')),
-    (7, 'Sarah', 'Lourd', (SELECT id FROM role WHERE title = 'Legal Team Lead'), 
-        NULL)
-    (8, 'Tom', 'Allen', (SELECT id FROM role WHERE title = 'Lawyer'),
-        (SELECT id FROM employee WHERE first_name = 'Sarah', AND last_name = 'Lourd'));
+    ('Kevin', 'Tupik', 
+        (SELECT id FROM role WHERE title = 'Software Engineer'),
+        (SELECT id FROM employee WHERE first_name = 'Ashley' AND last_name = 'Rodriguez')),
+    ('Malia', 'Brown', 
+        (SELECT id FROM role WHERE title = 'Accountant'),
+        (SELECT id FROM employee WHERE first_name = 'Kunal' AND last_name = 'Singh')),
+    ('Tom', 'Allen', 
+        (SELECT id FROM role WHERE title = 'Lawyer'),
+        (SELECT id FROM employee WHERE first_name = 'Sarah' AND last_name = 'Lourd'));    
+
+
+-- INSERT INTO employee (id, first_name, last_name, role_id, manager_id) VALUES
+--     (2, 'Mike', 'Chan', (SELECT id FROM role WHERE title = 'Salesperson'), 
+--         (SELECT id FROM employee WHERE first_name = 'John' AND last_name = 'Doe')),
+--     (3, 'Ashley', 'Rodriguez', (SELECT id FROM role WHERE title = 'Lead Engineer'), 
+--         NULL),
+--     (4, 'Kevin', 'Tupik', (SELECT id FROM role WHERE title = 'Software Engineer'),
+--         (SELECT id FROM employee WHERE first_name = 'Ashley', AND last_name = 'Rodriguez')),
+--     (5, 'Kunai', 'Singh', (SELECT id FROM role WHERE title = 'Account Manager')
+--         NULL),
+--     (6, 'Malia', 'Brown', (SELECT id FROM role WHERE title = 'Accountant'), 
+--         (SELECT id from employee WHERE first_name = 'Kunai', AND last_name = 'Singh')),
+--     (7, 'Sarah', 'Lourd', (SELECT id FROM role WHERE title = 'Legal Team Lead'), 
+--         NULL)
+--     (8, 'Tom', 'Allen', (SELECT id FROM role WHERE title = 'Lawyer'),
+--         (SELECT id FROM employee WHERE first_name = 'Sarah', AND last_name = 'Lourd'));
     
 
-
+--PREVIOUS CODE THAT DIDN'T WORK 12.16.24
+-- INSERT INTO role (title, salary, department_id)VALUES 
+--     ('Salesperson', 80000, (SELECT id FROM department WHERE name = 'Sales')),
+--     ('Lead Engineer', 150000 (SELECT id FROM department WHERE name = 'Engineering')),
+--     ('Software Engineer', 120000 (SELECT id FROM department WHERE name = 'Engineering')),
+--     ('Account Manager', 160000 (SELECT id FROM department WHERE name = 'Finance')), 
+--     ('Accountant', 125000, (SELECT id FROM department WHERE name = 'Finance')),
+--     ('Legal Team Lead', 250000, (SELECT id FROM department WHERE name = 'Legal')),
+--     ('Lawyer', 190000, (SELECT id FROM department WHERE name = 'Legal'));
 
 -- EXAMPLE CODE FROM GITHUB:
 -- INSERT INTO department(department_name)

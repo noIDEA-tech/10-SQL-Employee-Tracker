@@ -1,11 +1,8 @@
 const inquirer = require('inquirer');
-import inquirer from 'inquirer'; 
-const { Client } = require('pg'); 
+const { Client } = require('pg');
 require('dotenv').config();
 require('console.table');
-const client = require('./config/connection');
  
-
 const client = new Client({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -76,7 +73,7 @@ async function startApp() {
                 await viewEmployeesByManager();
                 break;
             case 'View Employees by Department':
-                await viewEployeesByDeparment();
+                await viewEployeesByDepartment();
                 break;
             case 'Delete Department':
                 await deleteDepartment();
@@ -114,14 +111,15 @@ async function viewDepartments() {
 async function viewRoles() {
     try {
         const result = await client.query(`
-            SELECT role.id, role.title, deparment.name AS department, role.salary
+            SELECT DISTINCT role.id, role.title, department.name AS department, role.salary
             FROM role
-            JOIN deparment ON role.department_id = department.id
+            JOIN department ON role.department_id = department.id
         `);
         console.table(result.rows);
         startApp();
     } catch (err) {
         console.error('Error viewing roles:', err);
+        startApp();
     }
 }
 async function viewEmployees() {
@@ -141,6 +139,24 @@ async function viewEmployees() {
         startApp();
     }
 }
+async function viewDepartmentBudget() {
+    try {
+        const result = await client.query(`
+            SELECT 
+                d.name AS department,
+                SUM(r.salary) AS total_budget
+            FROM employee e
+            JOIN role r ON e.role_id = r.id
+            JOIN department d ON r.department_id = d.id
+            GROUP BY d.name
+        `);
+        console.table(result.rows);
+        startApp();
+    } catch (err) {
+        console.error('Error viewing department budget:', err);
+        startApp();
+    }
+}
 
 async function addDepartment() {
     try {
@@ -149,8 +165,18 @@ async function addDepartment() {
                 type: 'input',
                 name: 'name',
                 message: 'What is the name of the department?',
-                validate: input => input ? true : 'Department name cannot be empty.'
+                validate: (input) => {
+                    
+                 if (/^\d+/.test(input)) {
+                    return 'Department name cannot be just numbers';
+                 }
+
+                 if (!input.trim()) {
+                    return 'Department name cannot be empty';
+                 }
+                 return true;
             }
+        }
    ]);
  
     await client.query('INSERT INTO department (name) VALUES ($1)', [answer.name]);
@@ -184,10 +210,10 @@ async function addRole() {
                 type: 'list',
                 name: 'department_id',
                 message: 'Which department does this role belong to?',
-                choices: [
-                    depts.rows.map(dept => ({ name: dept.name, value: dept.id 
-            }))
-        ]
+                choices: depts.rows.map(dept => ({ name: dept.name, value: dept.id }))
+            //     choices: [
+            //         depts.rows.map(dept => ({ name: dept.name, value: dept.id 
+            // }))
         }
     ]);
 
@@ -222,6 +248,15 @@ async function addEmployee() {
                 message: "What is the employee's last name?",
                 validate: input => input ? true : 'Last name cannot be empty.'
             },
+            {
+                type: 'list',
+                name: 'roleId',
+                message: "What is the employee's role?",
+                choices: roles.rows.map(role => ({
+                    name: role.title,
+                    value: role.id
+                }))
+            },
             
             {
                 type: 'list',
@@ -234,7 +269,7 @@ async function addEmployee() {
                     value: emp.id
                 })) 
             ]  
-        }
+        }    
     ]);
 
     await client.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)', 
@@ -248,6 +283,119 @@ async function addEmployee() {
     }
 }
 
+async function updateEmployeeRole() {
+    try {
+        const [employees, roles] = await Promise.all([
+            client.query('SELECT * FROM employee'),
+            client.query('SELECT * FROM role')
+        ]);
+
+        const answer = await inquirer.prompt([
+           {
+            type: 'list',
+            name: 'employeeId',
+            message: "Which employee's role do you want to update?",
+            choices: employees.rows.map(emp => ({
+               name: `${emp.first_name} ${emp.last_name}`,
+               value: emp.id 
+            }))
+        },
+        {
+            type: 'list',
+            name: 'roleId',
+            message: "What is the employee's new role?",
+            choices: roles.rows.map(role => ({
+                name: role.title,
+                value: role.id
+            }))
+        }
+    ]);
+
+    await client.query('UPDATE employee SET role_id = $1 WHERE id = $2', 
+        [answer.roleId, answer.employeeId]
+    );
+    console.log(`Employee role updated successfully!`);
+    startApp();
+    } catch (err) {
+        console.error('Error updating employee role:', err);
+        startApp();
+    }
+}
+
+async function deleteDepartment() {
+    try {
+        const departments = await client.query('SELECT * FROM department');
+
+        const answer = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'departmentId',
+                message: 'Which department do you want to delete?',
+                choices: departments.rows.map(department => ({
+                    name: department.name,
+                    value: department.id
+                }))
+            }
+        ]);
+
+        await client.query('DELETE FROM department WHERE id = $1', [answer.departmentId]);
+        console.log('Department deleted successfully!');
+        startApp();
+    } catch (err) {
+        console.error('Error deleting department:', err);
+        startApp();
+    }
+}
+
+async function deleteRole() {
+    try {
+        const roles = await client.query('SELECT * FROM role');
+
+        const answer = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'roleId',
+                message: 'Which role do you want to delete?',
+                choices: roles.rows.map(role => ({
+                    name: role.title,
+                    value: role.id
+                }))
+            }
+        ]);
+
+        await client.query('DELETE FROM role WHERE id = $1', [answer.roleId]);
+        console.log('Role deleted successfully!');
+        startApp();
+    } catch (err) {
+        console.error('Error deleting role:', err);
+        startApp();
+    }
+}
+
+async function deleteEmployee() {
+    try {
+        const employees = await client.query('SELECT * FROM employee');
+
+        const answer = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employeeId',
+                message: 'Which employee do you want to delete?',
+                choices: employees.rows.map(employee => ({
+                    name: `${employee.first_name} ${employee.last_name}`,
+                    value: employee.id
+                }))
+            }
+        ]);
+
+        await client.query('DELETE FROM employee WHERE id = $1', [answer.employeeId]);
+        console.log('Employee deleted successfully!');
+        startApp();
+    } catch (err) {
+        console.error('Error deleting employee:', err);
+        startApp();
+    }
+}
 init();
 // export { client, init };
 
