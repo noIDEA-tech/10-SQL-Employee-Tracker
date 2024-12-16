@@ -36,8 +36,8 @@ async function startApp() {
                     'Add Role',
                     'Add Employee',
                     'Update Employee Role',
-                    'View Employees by Manager',
-                    'View Employees by Department',
+                    // 'View Employees by Manager',
+                    // 'View Employees by Department',
                     'Delete Department',
                     'Delete Role',
                     'Delete Employee',
@@ -111,7 +111,7 @@ async function viewDepartments() {
 async function viewRoles() {
     try {
         const result = await client.query(`
-            SELECT DISTINCT role.id, role.title, department.name AS department, role.salary
+            SELECT role.id, role.title, department.name AS department, role.salary
             FROM role
             JOIN department ON role.department_id = department.id
         `);
@@ -143,10 +143,10 @@ async function viewDepartmentBudget() {
     try {
         const result = await client.query(`
             SELECT 
-                d.name AS department,
-                SUM(r.salary) AS total_budget
-            FROM employee e
-            JOIN role r ON e.role_id = r.id
+                department.name AS department,
+                SUM(role.salary) AS total_budget
+            FROM employee 
+            JOIN role ON employee.role_id = role.id
             JOIN department d ON r.department_id = d.id
             GROUP BY d.name
         `);
